@@ -57,7 +57,6 @@ import java.util.List;
  * 6. Updates a Lambda function's configuration value.
  * 7. Deletes a Lambda function.
  */
-
 public class LambdaScenario {
     public static final String DASHES = new String(new char[80]).replace("\0", "-");
 
@@ -80,46 +79,36 @@ public class LambdaScenario {
             System.out.println(usage);
             System.exit(1);
         }
-
         String functionName = args[0];
         String filePath = args[1];
         String role = args[2];
         String handler = args[3];
         String bucketName = args[4];
         String key = args[5];
-
         Region region = Region.US_WEST_2;
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(region)
-                .build();
-
+        LambdaClient awsLambda = LambdaClient.builder().region(region).build();
         System.out.println(DASHES);
         System.out.println("Welcome to the AWS Lambda example scenario.");
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("1. Create an AWS Lambda function.");
         String funArn = createLambdaFunction(awsLambda, functionName, filePath, role, handler);
         System.out.println("The AWS Lambda ARN is " + funArn);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("2. Get the " + functionName + " AWS Lambda function.");
         getFunction(awsLambda, functionName);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("3. List all AWS Lambda functions.");
         listFunctions(awsLambda);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("4. Invoke the Lambda function.");
         System.out.println("*** Sleep for 1 min to get Lambda function ready.");
         Thread.sleep(60000);
         invokeFunction(awsLambda, functionName);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("5. Update the Lambda function code and invoke it again.");
         updateFunctionCode(awsLambda, functionName, bucketName, key);
@@ -127,56 +116,33 @@ public class LambdaScenario {
         Thread.sleep(60000);
         invokeFunction(awsLambda, functionName);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("6. Update a Lambda function's configuration value.");
         updateFunctionConfiguration(awsLambda, functionName, handler);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("7. Delete the AWS Lambda function.");
         LambdaScenario.deleteLambdaFunction(awsLambda, functionName);
         System.out.println(DASHES);
-
         System.out.println(DASHES);
         System.out.println("The AWS Lambda scenario completed successfully");
         System.out.println(DASHES);
         awsLambda.close();
     }
 
-    public static String createLambdaFunction(LambdaClient awsLambda,
-            String functionName,
-            String filePath,
-            String role,
-            String handler) {
-
+    public static String createLambdaFunction(LambdaClient awsLambda, String functionName, String filePath, String role, String handler) {
         try {
             LambdaWaiter waiter = awsLambda.waiter();
             InputStream is = new FileInputStream(filePath);
             SdkBytes fileToUpload = SdkBytes.fromInputStream(is);
-
-            FunctionCode code = FunctionCode.builder()
-                    .zipFile(fileToUpload)
-                    .build();
-
-            CreateFunctionRequest functionRequest = CreateFunctionRequest.builder()
-                    .functionName(functionName)
-                    .description("Created by the Lambda Java API")
-                    .code(code)
-                    .handler(handler)
-                    .runtime(Runtime.JAVA8)
-                    .role(role)
-                    .build();
-
+            FunctionCode code = FunctionCode.builder().zipFile(fileToUpload).build();
+            CreateFunctionRequest functionRequest = CreateFunctionRequest.builder().functionName(functionName).description("Created by the Lambda Java API").code(code).handler(handler).runtime(Runtime.JAVA8).role(role).build();
             // Create a Lambda function using a waiter
             CreateFunctionResponse functionResponse = awsLambda.createFunction(functionRequest);
-            GetFunctionRequest getFunctionRequest = GetFunctionRequest.builder()
-                    .functionName(functionName)
-                    .build();
+            GetFunctionRequest getFunctionRequest = GetFunctionRequest.builder().functionName(functionName).build();
             WaiterResponse<GetFunctionResponse> waiterResponse = waiter.waitUntilFunctionExists(getFunctionRequest);
             waiterResponse.matched().response().ifPresent(System.out::println);
             return functionResponse.functionArn();
-
         } catch (LambdaException | FileNotFoundException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -186,13 +152,9 @@ public class LambdaScenario {
 
     public static void getFunction(LambdaClient awsLambda, String functionName) {
         try {
-            GetFunctionRequest functionRequest = GetFunctionRequest.builder()
-                    .functionName(functionName)
-                    .build();
-
+            GetFunctionRequest functionRequest = GetFunctionRequest.builder().functionName(functionName).build();
             GetFunctionResponse response = awsLambda.getFunction(functionRequest);
             System.out.println("The runtime of this Lambda function is " + response.configuration().runtime());
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -206,7 +168,6 @@ public class LambdaScenario {
             for (FunctionConfiguration config : list) {
                 System.out.println("The function name is " + config.functionName());
             }
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -214,7 +175,6 @@ public class LambdaScenario {
     }
 
     public static void invokeFunction(LambdaClient awsLambda, String functionName) {
-
         InvokeResponse res;
         try {
             // Need a SdkBytes instance for the payload.
@@ -222,16 +182,10 @@ public class LambdaScenario {
             jsonObj.put("inputValue", "2000");
             String json = jsonObj.toString();
             SdkBytes payload = SdkBytes.fromUtf8String(json);
-
-            InvokeRequest request = InvokeRequest.builder()
-                    .functionName(functionName)
-                    .payload(payload)
-                    .build();
-
+            InvokeRequest request = InvokeRequest.builder().functionName(functionName).payload(payload).build();
             res = awsLambda.invoke(request);
             String value = res.payload().asUtf8String();
             System.out.println(value);
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -241,20 +195,10 @@ public class LambdaScenario {
     public static void updateFunctionCode(LambdaClient awsLambda, String functionName, String bucketName, String key) {
         try {
             LambdaWaiter waiter = awsLambda.waiter();
-            UpdateFunctionCodeRequest functionCodeRequest = UpdateFunctionCodeRequest.builder()
-                    .functionName(functionName)
-                    .publish(true)
-                    .s3Bucket(bucketName)
-                    .s3Key(key)
-                    .build();
-
+            UpdateFunctionCodeRequest functionCodeRequest = UpdateFunctionCodeRequest.builder().functionName(functionName).publish(true).s3Bucket(bucketName).s3Key(key).build();
             UpdateFunctionCodeResponse response = awsLambda.updateFunctionCode(functionCodeRequest);
-            GetFunctionConfigurationRequest getFunctionConfigRequest = GetFunctionConfigurationRequest.builder()
-                    .functionName(functionName)
-                    .build();
-
-            WaiterResponse<GetFunctionConfigurationResponse> waiterResponse = waiter
-                    .waitUntilFunctionUpdated(getFunctionConfigRequest);
+            GetFunctionConfigurationRequest getFunctionConfigRequest = GetFunctionConfigurationRequest.builder().functionName(functionName).build();
+            WaiterResponse<GetFunctionConfigurationResponse> waiterResponse = waiter.waitUntilFunctionUpdated(getFunctionConfigRequest);
             waiterResponse.matched().response().ifPresent(System.out::println);
             System.out.println("The last modified value is " + response.lastModified());
 
@@ -266,14 +210,8 @@ public class LambdaScenario {
 
     public static void updateFunctionConfiguration(LambdaClient awsLambda, String functionName, String handler) {
         try {
-            UpdateFunctionConfigurationRequest configurationRequest = UpdateFunctionConfigurationRequest.builder()
-                    .functionName(functionName)
-                    .handler(handler)
-                    .runtime(Runtime.JAVA11)
-                    .build();
-
+            UpdateFunctionConfigurationRequest configurationRequest = UpdateFunctionConfigurationRequest.builder().functionName(functionName).handler(handler).runtime(Runtime.JAVA11).build();
             awsLambda.updateFunctionConfiguration(configurationRequest);
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -282,13 +220,9 @@ public class LambdaScenario {
 
     public static void deleteLambdaFunction(LambdaClient awsLambda, String functionName) {
         try {
-            DeleteFunctionRequest request = DeleteFunctionRequest.builder()
-                    .functionName(functionName)
-                    .build();
-
+            DeleteFunctionRequest request = DeleteFunctionRequest.builder().functionName(functionName).build();
             awsLambda.deleteFunction(request);
             System.out.println("The " + functionName + " function was deleted");
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);

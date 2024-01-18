@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.lambda.model.LambdaException;
  */
 public class GetAccountSettings {
     public static void main(String[] args) {
-        Region region = Region.US_EAST_1;
+        Region region = Region.EU_CENTRAL_1;
         LambdaClient awsLambda = LambdaClient.builder()
                 .region(region)
                 .build();

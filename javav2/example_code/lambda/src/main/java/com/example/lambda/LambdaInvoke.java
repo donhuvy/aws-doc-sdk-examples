@@ -30,7 +30,6 @@ public class LambdaInvoke {
      * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/get-started.
      * html
      */
-
     public static void main(String[] args) {
         final String usage = """
 
@@ -40,18 +39,13 @@ public class LambdaInvoke {
                 Where:
                     functionName - The name of the Lambda function\s
                 """;
-
         if (args.length != 1) {
             System.out.println(usage);
             System.exit(1);
         }
-
         String functionName = args[0];
-        Region region = Region.US_WEST_2;
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(region)
-                .build();
-
+        Region region = Region.EU_CENTRAL_1;
+        LambdaClient awsLambda = LambdaClient.builder().region(region).build();
         invokeFunction(awsLambda, functionName);
         awsLambda.close();
     }
@@ -65,17 +59,11 @@ public class LambdaInvoke {
             jsonObj.put("inputValue", "2000");
             String json = jsonObj.toString();
             SdkBytes payload = SdkBytes.fromUtf8String(json);
-
             // Setup an InvokeRequest.
-            InvokeRequest request = InvokeRequest.builder()
-                    .functionName(functionName)
-                    .payload(payload)
-                    .build();
-
+            InvokeRequest request = InvokeRequest.builder().functionName(functionName).payload(payload).build();
             res = awsLambda.invoke(request);
             String value = res.payload().asUtf8String();
             System.out.println(value);
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);

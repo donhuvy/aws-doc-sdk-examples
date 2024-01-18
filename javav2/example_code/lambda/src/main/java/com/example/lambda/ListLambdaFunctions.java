@@ -25,10 +25,7 @@ import java.util.List;
 public class ListLambdaFunctions {
     public static void main(String[] args) {
         Region region = Region.US_WEST_2;
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(region)
-                .build();
-
+        LambdaClient awsLambda = LambdaClient.builder().region(region).build();
         listFunctions(awsLambda);
         awsLambda.close();
     }
@@ -40,7 +37,6 @@ public class ListLambdaFunctions {
             for (FunctionConfiguration config : list) {
                 System.out.println("The function name is " + config.functionName());
             }
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);

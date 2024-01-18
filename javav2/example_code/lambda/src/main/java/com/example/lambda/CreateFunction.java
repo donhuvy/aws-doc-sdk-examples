@@ -38,7 +38,6 @@ import java.io.InputStream;
 
 public class CreateFunction {
     public static void main(String[] args) {
-
         final String usage = """
 
                 Usage:
@@ -50,21 +49,16 @@ public class CreateFunction {
                     role - The role ARN that has Lambda permissions.\s
                     handler - The fully qualified method name (for example, example.Handler::handleRequest). \s
                 """;
-
         if (args.length != 4) {
             System.out.println(usage);
             System.exit(1);
         }
-
         String functionName = args[0];
         String filePath = args[1];
         String role = args[2];
         String handler = args[3];
         Region region = Region.US_WEST_2;
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(region)
-                .build();
-
+        LambdaClient awsLambda = LambdaClient.builder().region(region).build();
         createLambdaFunction(awsLambda, functionName, filePath, role, handler);
         awsLambda.close();
     }
@@ -79,29 +73,14 @@ public class CreateFunction {
             LambdaWaiter waiter = awsLambda.waiter();
             InputStream is = new FileInputStream(filePath);
             SdkBytes fileToUpload = SdkBytes.fromInputStream(is);
-
-            FunctionCode code = FunctionCode.builder()
-                    .zipFile(fileToUpload)
-                    .build();
-
-            CreateFunctionRequest functionRequest = CreateFunctionRequest.builder()
-                    .functionName(functionName)
-                    .description("Created by the Lambda Java API")
-                    .code(code)
-                    .handler(handler)
-                    .runtime(Runtime.JAVA8)
-                    .role(role)
-                    .build();
-
+            FunctionCode code = FunctionCode.builder().zipFile(fileToUpload).build();
+            CreateFunctionRequest functionRequest = CreateFunctionRequest.builder().functionName(functionName).description("Created by the Lambda Java API").code(code).handler(handler).runtime(Runtime.JAVA8).role(role).build();
             // Create a Lambda function using a waiter.
             CreateFunctionResponse functionResponse = awsLambda.createFunction(functionRequest);
-            GetFunctionRequest getFunctionRequest = GetFunctionRequest.builder()
-                    .functionName(functionName)
-                    .build();
+            GetFunctionRequest getFunctionRequest = GetFunctionRequest.builder().functionName(functionName).build();
             WaiterResponse<GetFunctionResponse> waiterResponse = waiter.waitUntilFunctionExists(getFunctionRequest);
             waiterResponse.matched().response().ifPresent(System.out::println);
             System.out.println("The function ARN is " + functionResponse.functionArn());
-
         } catch (LambdaException | FileNotFoundException e) {
             System.err.println(e.getMessage());
             System.exit(1);

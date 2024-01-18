@@ -38,23 +38,16 @@ public class DeleteFunction {
 
         String functionName = args[0];
         Region region = Region.US_EAST_1;
-        LambdaClient awsLambda = LambdaClient.builder()
-                .region(region)
-                .build();
-
+        LambdaClient awsLambda = LambdaClient.builder().region(region).build();
         deleteLambdaFunction(awsLambda, functionName);
         awsLambda.close();
     }
 
     public static void deleteLambdaFunction(LambdaClient awsLambda, String functionName) {
         try {
-            DeleteFunctionRequest request = DeleteFunctionRequest.builder()
-                    .functionName(functionName)
-                    .build();
-
+            DeleteFunctionRequest request = DeleteFunctionRequest.builder().functionName(functionName).build();
             awsLambda.deleteFunction(request);
             System.out.println("The " + functionName + " function was deleted");
-
         } catch (LambdaException e) {
             System.err.println(e.getMessage());
             System.exit(1);
